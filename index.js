@@ -21,7 +21,7 @@ setInterval(() => {
     co2CallCount = 0;
 }, 60 * 60 * 1000);
 
-app.get('/',(res,req)=>{
+app.get('/',(req,res)=>{
     res.send('Proxy running');
 })
 
