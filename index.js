@@ -11,7 +11,8 @@ app.use(cors());
 const SOLAR_API_BASE_URL = 'https://api.forecast.solar';
 const CO2_BASE_URL = process.env.CO2_BASE_URL;
 
-const CALL_LIMIT_PER_HOUR = 50;
+const SOLAR_CALL_LIMIT_PER_HOUR = parseInt(process.env.SOLAR_CALL_LIMIT_PER_HOUR);
+const CO2_CALL_LIMIT_PER_HOUR = parseInt(process.env.CO2_CALL_LIMIT_PER_HOUR);
 
 let solarCallCount = 0;
 let co2CallCount = 0;
@@ -21,13 +22,12 @@ setInterval(() => {
     co2CallCount = 0;
 }, 60 * 60 * 1000);
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send('Proxy running');
 })
 
-
-app.get('/solarapi/:lat/:long/:azimuth/:declination/:kpw1', async (req, res) => {
-    if (solarCallCount >= CALL_LIMIT_PER_HOUR) {
+app.get('/solarapi/:lat/:long/:declination/:azimuth/:kpw1', async (req, res) => {
+    if (solarCallCount >= SOLAR_CALL_LIMIT_PER_HOUR) {
         res.status(429).json({ error: "API rate limit exceeded." })
         return;
     }
@@ -36,7 +36,7 @@ app.get('/solarapi/:lat/:long/:azimuth/:declination/:kpw1', async (req, res) => 
     try {
         const response = await axios({
             method: "GET",
-            url: `${SOLAR_API_BASE_URL}/${apiKey}/estimate/watthours/period/${req.params.lat}/${req.params.long}/${req.params.azimuth}/${req.params.declination}/${req.params.kpw1}`,
+            url: `${SOLAR_API_BASE_URL}/${apiKey}/estimate/watthours/period/${req.params.lat}/${req.params.long}/${req.params.declination}/${req.params.azimuth}/${req.params.kpw1}`,
             headers: {
                 "Accept": "application/json",
             },
@@ -51,7 +51,7 @@ app.get('/solarapi/:lat/:long/:azimuth/:declination/:kpw1', async (req, res) => 
 });
 
 app.get('/co2api', async (req, res) => {
-    if (co2CallCount >= CALL_LIMIT_PER_HOUR) {
+    if (co2CallCount >= CO2_CALL_LIMIT_PER_HOUR) {
         res.status(429).json({ error: "API rate limit exceeded." })
         return;
     }
